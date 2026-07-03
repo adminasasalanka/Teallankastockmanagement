@@ -21,18 +21,25 @@ jobs:
 
     - name: Create Cordova Project
       run: |
+        # 1. මුලින්ම Cordova project එක හදනවා
         cordova create stockapp com.stockapp.teallanka TealLankaStock
         
-        # HTML ෆයිල් ටික කොපි කිරීම
-        rm -rf stockapp/www/*
-        cp -r * stockapp/www/ || true
-        
+        # 2. Android platform එක එකතු කරනවා
         cd stockapp
         cordova platform add android
         
-        # ඔයා අප්ලෝඩ් කරපු icon.png එක ඇප් එකේ අයිකන් එක විදිහට config එකට එකතු කිරීම
-        cp ../icon.png res/icon.png || true
+        # 3. ප්‍රධාන folder එකේ තියෙන ඔයාගේ HTML, CSS, JS ෆයිල් ටික විතරක් www එකට කොපි කරනවා
+        # (Cordova ෆෝල්ඩර් අතහැර වෙනත් ෆයිල් කොපි කිරීම)
+        cd ..
+        find . -maxdepth 1 -type f -exec cp {} stockapp/www/ \;
+        # CSS, JS, Images වගේ folders වෙනම තියෙනවා නම් ඒවත් www එකට කොපි කරනවා
+        cp -r css js images stockapp/www/ 2>/dev/null || true
         
+        # 4. Icon එක තිබේ නම් ඒක වෙනම කොපි කරනවා
+        cp icon.png stockapp/res/icon.png 2>/dev/null || true
+        
+        # 5. Config file එක හදනවා
+        cd stockapp
         cat <<EOF > config.xml
         <?xml version='1.0' encoding='utf-8'?>
         <widget id="com.stockapp.teallanka" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
@@ -41,7 +48,8 @@ jobs:
             <author email="dev@callback.com" href="http://cordova.io">Teal Lanka Team</author>
             <content src="index.html" />
             <access origin="*" />
-            <icon src="res/icon.png" />  </widget>
+            <icon src="res/icon.png" />
+        </widget>
         EOF
 
     - name: Build Android APK
