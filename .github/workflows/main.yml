@@ -2,7 +2,7 @@ name: Flutter APK Build
 
 on:
   push:
-    branches: [ main ] # ඔයාගේ main branch එකට code push කරද්දී මේක run වෙනවා
+    branches: [ main ] # ඔයාගේ main branch එකේ නම වෙනස් නම් ඒක දාන්න (උදා: master)
 
 jobs:
   build:
@@ -27,11 +27,8 @@ jobs:
     - name: Build APK
       run: flutter build apk --release
 
-- name: Build APK
-      run: flutter build apk --release
-
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: release-apk
-        path: "**/build/app/outputs/flutter-apk/*.apk" # මේ ක්‍රමයෙන් ඕනෑම තැනක හැදෙන APK එක අහුකරගන්නවා
+        path: "build/app/outputs/flutter-apk/app-release.apk"
