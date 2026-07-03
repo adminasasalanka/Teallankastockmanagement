@@ -21,22 +21,23 @@ jobs:
 
     - name: Create Cordova Project
       run: |
-        # 1. මුලින්ම Cordova project එක හදනවා
+        # 1. මුලින්ම Cordova project එක වෙනම ෆෝල්ඩරයක හදනවා
         cordova create stockapp com.stockapp.teallanka TealLankaStock
         
         # 2. Android platform එක එකතු කරනවා
         cd stockapp
         cordova platform add android
-        
-        # 3. ප්‍රධාන folder එකේ තියෙන ඔයාගේ HTML, CSS, JS ෆයිල් ටික විතරක් www එකට කොපි කරනවා
-        # (Cordova ෆෝල්ඩර් අතහැර වෙනත් ෆයිල් කොපි කිරීම)
         cd ..
-        find . -maxdepth 1 -type f -exec cp {} stockapp/www/ \;
-        # CSS, JS, Images වගේ folders වෙනම තියෙනවා නම් ඒවත් www එකට කොපි කරනවා
-        cp -r css js images stockapp/www/ 2>/dev/null || true
+        
+        # 3. .github සහ stockapp හැර අනිත් හැම ෆයිල්/ෆෝල්ඩරයක්ම www එකට කොපි කරනවා
+        # මේකෙන් කිසිම Loop එකක් හෝ 'project root' error එකක් එන්නේ නැහැ
+        rsync -av --exclude='.github' --exclude='stockapp' --exclude='.git' ./ stockapp/www/
         
         # 4. Icon එක තිබේ නම් ඒක වෙනම කොපි කරනවා
-        cp icon.png stockapp/res/icon.png 2>/dev/null || true
+        if [ -f "icon.png" ]; then
+          mkdir -p stockapp/res
+          cp icon.png stockapp/res/icon.png
+        fi
         
         # 5. Config file එක හදනවා
         cd stockapp
