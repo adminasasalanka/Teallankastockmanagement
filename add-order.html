@@ -83,13 +83,14 @@
         const authProd = getAuth(prodApp);
         const authStock = getAuth(stockApp);
 
+        // 🔐 Security Patch
         async function initSecureAuth() {
             try {
                 await signInAnonymously(authProd);
                 await signInAnonymously(authStock);
             } catch (err) {
                 console.error(err);
-                alert("🔒 Security Connection Error.");
+                alert("🔒 Database Secure Session Failed.");
             }
         }
         initSecureAuth();
@@ -127,24 +128,33 @@
         document.getElementById('orderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Saving...";
+            const pCode = document.getElementById('plantCode').value.trim().toUpperCase();
+            const vName = document.getElementById('variety').value.trim();
+
             try {
                 await addDoc(collection(dbStock, "orders"), {
                     companyName: document.getElementById('companyName').value.trim(),
-                    plantCode: document.getElementById('plantCode').value.trim().toUpperCase(),
-                    variety: document.getElementById('variety').value.trim(),
+                    plantCode: pCode,
+                    variety: vName,
                     orderMonth: document.getElementById('orderMonth').value,
                     deliveryPeriod: document.getElementById('deliveryPeriod').value,
                     orderedQty: parseInt(document.getElementById('orderedQty').value),
                     status: "Pending",
                     timestamp: new Date().toISOString()
                 });
-                alert("Order Saved successfully!");
+                
+                alert("Order Saved successfully!"); 
                 document.getElementById('orderForm').reset();
                 document.getElementById('orderMonth').value = new Date().toISOString().substring(0, 7);
                 document.getElementById('variety').disabled = true;
                 document.getElementById('codeStatus').innerText = "";
-            } catch (err) { alert("Error saving order!"); }
-            finally { btn.disabled = false; btn.innerText = "Save Order"; }
+            } catch (err) { 
+                console.error(err); 
+                alert("Error saving order!"); 
+            } finally { 
+                btn.disabled = false; 
+                btn.innerText = "Save Order"; 
+            }
         });
     </script>
 </body>
