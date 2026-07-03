@@ -47,12 +47,13 @@
         const dbStock = getFirestore(stockApp);
         const authStock = getAuth(stockApp);
 
+        // 🔐 Security Patch
         async function startSecureSession() {
             try {
                 await signInAnonymously(authStock);
                 loadHistory();
             } catch (err) {
-                document.getElementById('historyContainer').innerHTML = "<p style='text-align:center; color:red;'>🔒 Access Refused.</p>";
+                document.getElementById('historyContainer').innerHTML = "<p style='text-align:center; color:red;'>🔒 Security Refused.</p>";
             }
         }
 
@@ -83,16 +84,18 @@
                     card.setAttribute('data-code', data.plantCode.toUpperCase());
                     card.setAttribute('data-company', data.companyName.toUpperCase());
                     card.innerHTML = `
-                        <div class="history-header"><span>${data.companyName}</span><span class="shipped-badge">Shipped: ${data.shippedDate || 'N/A'}</span></div>
-                        <div class="history-body">
-                            <strong>Plant:</strong> ${data.plantCode} - ${data.variety || 'N/A'}<br>
-                            <strong>Scheduled:</strong> ${data.orderMonth} (${data.deliveryPeriod})<br>
-                            <strong>Shipped Qty:</strong> <span style="font-weight:bold; color:#00875a;">${data.orderedQty.toLocaleString()}</span>
+                        <div class="history-card">
+                            <div class="history-header"><span>${data.companyName}</span><span class="shipped-badge">Shipped: ${data.shippedDate || 'N/A'}</span></div>
+                            <div class="history-body">
+                                <strong>Plant:</strong> ${data.plantCode} - ${data.variety || data.plantName || 'N/A'}<br>
+                                <strong>Scheduled:</strong> ${data.orderMonth} (${data.deliveryPeriod})<br>
+                                <strong>Shipped Qty:</strong> <span style="font-weight:bold; color:#00875a;">${data.orderedQty.toLocaleString()}</span>
+                            </div>
                         </div>`;
                     container.appendChild(card);
                 });
                 filterHistory();
-            } catch (err) { container.innerHTML = "<p>Error loading.</p>"; }
+            } catch (err) { console.error(err); }
         }
 
         startSecureSession();
