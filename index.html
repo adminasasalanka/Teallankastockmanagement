@@ -10,7 +10,7 @@
         .nav-btn { text-decoration: none; padding: 10px 14px; border-radius: 6px; font-weight: bold; font-size: 13px; white-space: nowrap; }
         .nav-btn.green-btn { background: #00875a; color: white; }
         .nav-btn.blue-btn { background: #007bff; color: white; }
-        .container { max-width: 00px; margin: 0 auto; }
+        .container { max-width: 600px; margin: 0 auto; }
         .header-section { text-align: center; margin-bottom: 15px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .header-section h2 { margin: 0 0 10px 0; font-size: 18px; }
         .controls-row { display: flex; gap: 10px; margin-bottom: 10px; }
@@ -70,7 +70,7 @@
 
         const dbProd = getFirestore(prodApp);
         const dbStock = getFirestore(stockApp);
-        
+
         const authProd = getAuth(prodApp);
         const authStock = getAuth(stockApp);
 
@@ -78,15 +78,15 @@
         document.getElementById('reportMonth').addEventListener('change', generateMobileReport);
         document.getElementById('searchBox').addEventListener('input', filterCards);
 
-        // 🔐 Security Sign-in
+        // 🔐 Security Patch
         async function startSecureSession() {
             try {
                 await signInAnonymously(authProd);
                 await signInAnonymously(authStock);
                 generateMobileReport();
             } catch (err) {
-                console.error(err);
-                document.getElementById('mobileCardsContainer').innerHTML = `<div id="loadingText" style="color:red;">🔒 Security Connection Error.</div>`;
+                console.error("Auth Error:", err);
+                document.getElementById('mobileCardsContainer').innerHTML = `<div id="loadingText" style="color:red;">🔒 Security Error: Access Denied.</div>`;
             }
         }
 
@@ -118,94 +118,4 @@
                 });
                 allOrders.forEach(o => {
                     const code = o.plantCode ? o.plantCode.trim().toUpperCase() : null;
-                    if (code && !summaryMap[code]) summaryMap[code] = { variety: o.variety || "Ordered Only", multy: 0, rooting: 0, cap1st: 0, cap2nd: 0 };
-                    if (code && !ordersMap[code]) ordersMap[code] = { '1st-15th': { qty: 0, companies: [] }, '16th-End': { qty: 0, companies: [] } };
-                });
-
-                Object.keys(summaryMap).forEach(code => {
-                    let totalMatureStockUpToNow = 0, totalOrdersShippedUpToNow = 0, newMatureCap1st = 0, newMatureCap2nd = 0;
-                    allOrders.forEach(o => {
-                        if (o.plantCode && o.plantCode.trim().toUpperCase() === code && o.status === "Shipped" && o.orderMonth < selectedMonth) {
-                            totalOrdersShippedUpToNow += parseInt(o.orderedQty || 0);
-                        }
-                    });
-                    allProdRecords.forEach(r => {
-                        if (r.plantCode && r.plantCode.trim().toUpperCase() === code && r.date) {
-                            let inputDate = new Date(r.date);
-                            inputDate.setDate(inputDate.getDate() + 30);
-                            let matureMonthStr = inputDate.toISOString().substring(0, 7);
-                            let matureDay = inputDate.getDate();
-                            if (matureMonthStr < selectedMonth) totalMatureStockUpToNow += parseInt(r.rooting || 0);
-                            else if (matureMonthStr === selectedMonth) {
-                                if (matureDay <= 15) newMatureCap1st += parseInt(r.rooting || 0); else newMatureCap2nd += parseInt(r.rooting || 0);
-                            }
-                        }
-                        if (r.plantCode && r.plantCode.trim().toUpperCase() === code && r.date && r.date.startsWith(selectedMonth)) {
-                            summaryMap[code].multy += parseInt(r.multy || 0);
-                            summaryMap[code].rooting += parseInt(r.rooting || 0);
-                        }
-                    });
-                    let rolloverStock = Math.max(0, totalMatureStockUpToNow - totalOrdersShippedUpToNow);
-                    summaryMap[code].cap1st = rolloverStock + newMatureCap1st;
-                    summaryMap[code].cap2nd = newMatureCap2nd;
-                });
-
-                allOrders.forEach(o => {
-                    if (o.orderMonth === selectedMonth && o.status === "Pending") {
-                        const code = o.plantCode ? o.plantCode.trim().toUpperCase() : "UNKNOWN";
-                        const delivery = o.deliveryPeriod;
-                        if (ordersMap[code] && ordersMap[code][delivery]) {
-                            ordersMap[code][delivery].qty += o.orderedQty;
-                            if (!ordersMap[code][delivery].companies.includes(o.companyName)) ordersMap[code][delivery].companies.push(o.companyName);
-                        }
-                    }
-                });
-
-                const sortedCodes = Object.keys(summaryMap).sort();
-                container.innerHTML = "";
-                if (sortedCodes.length === 0) { container.innerHTML = `<div id="loadingText">No records found.</div>`; return; }
-
-                sortedCodes.forEach(code => {
-                    const plant = summaryMap[code];
-                    const ord1st = ordersMap[code] ? ordersMap[code]['1st-15th'] : { qty: 0, companies: [] };
-                    const ord2nd = ordersMap[code] ? ordersMap[code]['16th-End'] : { qty: 0, companies: [] };
-                    const totalCapacity = plant.cap1st + plant.cap2nd;
-                    const totalOrdered = ord1st.qty + ord2nd.qty;
-                    const netRemaining = totalCapacity - totalOrdered;
-                    let allCompanies = [...new Set([...ord1st.companies, ...ord2nd.companies])].join(", ");
-
-                    container.innerHTML += `
-                        <div class="plant-card" data-code="${code}" data-variety="${plant.variety.toUpperCase()}">
-                            <div class="card-row-top">
-                                <div class="plant-identity"><h3>${code}</h3><span>${plant.variety}</span></div>
-                                <div class="balance-badge ${netRemaining < 0 ? 'badge-over' : 'badge-ok'}"><small>Remaining</small>${netRemaining.toLocaleString()}</div>
-                            </div>
-                            <div class="card-grid">
-                                <div class="grid-box">
-                                    <div class="title" style="color:#00875a;">Available Capacity</div>
-                                    <div class="values"><span>1-15:</span> <span>${plant.cap1st.toLocaleString()}</span></div>
-                                    <div class="values"><span>16-End:</span> <span>${plant.cap2nd.toLocaleString()}</span></div>
-                                    <div class="values val-total" style="color:#00875a;"><span>Total:</span> <span>${totalCapacity.toLocaleString()}</span></div>
-                                </div>
-                                <div class="grid-box">
-                                    <div class="title" style="color:#dee2e6;">Total Ordered</div>
-                                    <div class="values"><span>1-15:</span> <span>${ord1st.qty.toLocaleString()}</span></div>
-                                    <div class="values"><span>16-End:</span> <span>${ord2nd.qty.toLocaleString()}</span></div>
-                                    <div class="values val-total" style="color:#b01a1a;"><span>Total:</span> <span>${totalOrdered.toLocaleString()}</span></div>
-                                </div>
-                            </div>
-                            <div class="card-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 10px;">
-                                <div style="font-size:11px; background:#f1f3f5; padding:6px; border-radius:4px;">Multy: <strong style="color:#00875a;">${plant.multy}</strong></div>
-                                <div style="font-size:11px; background:#f1f3f5; padding:6px; border-radius:4px;">Rooting: <strong style="color:#007bff;">${plant.rooting}</strong></div>
-                            </div>
-                            ${allCompanies ? `<div class="company-list"><strong>Companies:</strong> ${allCompanies}</div>` : ''}
-                        </div>`;
-                });
-                filterCards(); 
-            } catch (err) { console.error(err); container.innerHTML = `<div id="loadingText" style="color:red;">Error loading records.</div>`; }
-        }
-
-        startSecureSession();
-    </script>
-</body>
-</html>
+                    if (code && !summaryMap[code]) summaryMap[code] = { variety: o.variety || "Ordered Only", multy: 0, rooting: 0, cap
