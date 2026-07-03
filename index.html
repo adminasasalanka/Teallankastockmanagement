@@ -3,68 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Management Dashboard</title>
+    <title>Teal Lanka - Mobile Dashboard</title>
     <style>
-        :root { --primary: #00875a; --bg: #f8f9fa; --card-bg: #ffffff; --text: #212529; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-        body { background: var(--bg); color: var(--text); padding: 15px; padding-bottom: 75px; }
-        h2 { margin-bottom: 15px; font-size: 20px; color: #1a1a1a; text-align: center; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; outline: none; }
-        #searchBox { grid-column: span 2; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 12px; background-color: #f1f3f5; color: #212529; }
+        .top-nav { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 15px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .nav-btn { text-decoration: none; padding: 10px 14px; border-radius: 6px; font-weight: bold; font-size: 13px; white-space: nowrap; }
+        .nav-btn.green-btn { background: #00875a; color: white; }
+        .nav-btn.blue-btn { background: #007bff; color: white; }
+        .container { max-width: 00px; margin: 0 auto; }
+        .header-section { text-align: center; margin-bottom: 15px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .header-section h2 { margin: 0 0 10px 0; font-size: 18px; }
+        .controls-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .controls-row input[type="month"] { width: 130px; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        .controls-row input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
         #mobileCardsContainer { display: flex; flex-direction: column; gap: 12px; }
-        .plant-card { background: var(--card-bg); border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); border-left: 4px solid var(--primary); }
+        .plant-card { background: white; border-radius: 8px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 4px solid #00875a; }
         .card-row-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .plant-identity h3 { font-size: 16px; color: #007bff; }
-        .plant-identity span { font-size: 12px; color: #6c757d; font-weight: 500; }
-        .balance-badge { text-align: right; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 15px; }
-        .badge-ok { background: #e6f6f0; color: #00875a; }
-        .badge-over { background: #fff5f5; color: #e03131; }
-        .balance-badge small { display: block; font-size: 9px; font-weight: normal; color: #6c757d; text-transform: uppercase; }
+        .plant-identity h3 { margin: 0 0 2px 0; font-size: 16px; color: #007bff; }
+        .plant-identity span { font-size: 12px; color: #666; font-weight: 500; }
+        .balance-badge { text-align: right; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 14px; }
+        .badge-ok { background: #e6f4ea; color: #137333; }
+        .badge-over { background: #fce8e6; color: #c5221f; }
+        .balance-badge small { display: block; font-size: 9px; font-weight: normal; color: #666; text-transform: uppercase; }
         .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
-        .grid-box { background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #e9ecef; }
+        .grid-box { background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #dee2e6; }
         .grid-box .title { font-size: 11px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
-        .grid-box .values { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px; color: #495057; }
-        .val-total { border-top: 1px dashed #dee2e6; margin-top: 4px; padding-top: 4px; font-weight: bold; }
-        .company-list { font-size: 11px; color: #6c757d; background: #f1f3f5; padding: 6px; border-radius: 4px; margin-top: 5px; word-break: break-word; }
-        #loadingText { text-align: center; font-size: 14px; color: #6c757d; padding: 20px; }
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
-        .nav-item { text-decoration: none; color: #6c757d; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 500; }
-        .nav-item.active { color: var(--primary); }
-        .nav-item svg { width: 22px; height: 22px; }
+        .grid-box .values { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px; }
+        .val-total { border-top: 1px dashed #ccc; margin-top: 4px; padding-top: 4px; font-weight: bold; }
+        .company-list { font-size: 11px; color: #555; background: #e9ecef; padding: 6px; border-radius: 4px; margin-top: 5px; }
+        #loadingText { text-align: center; font-size: 14px; color: #666; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <h2>Stock Dashboard</h2>
-
-    <div class="controls">
-        <input type="month" id="reportMonth">
-        <input type="text" id="searchBox" placeholder="Search by Plant Code or Variety...">
+    <div class="top-nav">
+        <a href="index.html" class="nav-btn green-btn">Dashboard</a>
+        <a href="add-order.html" class="nav-btn blue-btn">Add Order</a>
+        <a href="orders-list.html" class="nav-btn blue-btn">Active Orders</a>
+        <a href="shipped-history.html" class="nav-btn blue-btn">Shipped History</a>
     </div>
 
-    <div id="mobileCardsContainer">
-        <div id="loadingText">Recalculating rolling stock...</div>
-    </div>
+    <div class="container">
+        <div class="header-section">
+            <h2>Rolling Stock Summary</h2>
+            <div class="controls-row">
+                <input type="month" id="reportMonth">
+                <input type="text" id="searchBox" placeholder="Search code/variety...">
+            </div>
+        </div>
 
-    <nav class="nav-bar">
-        <a href="index.html" class="nav-item active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></a.nav-item>
-            <span>Dashboard</span>
-        </a>
-        <a href="add-order.html" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Add Order</span>
-        </a>
-        <a href="orders-list.html" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            <span>Orders</span>
-        </a>
-        <a href="shipped-history.html" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            <span>History</span>
-        </a>
-    </nav>
+        <div id="mobileCardsContainer">
+            <div id="loadingText">Recalculating rolling stock...</div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -87,6 +78,7 @@
         document.getElementById('reportMonth').addEventListener('change', generateMobileReport);
         document.getElementById('searchBox').addEventListener('input', filterCards);
 
+        // 🔐 Security Sign-in
         async function startSecureSession() {
             try {
                 await signInAnonymously(authProd);
@@ -94,7 +86,7 @@
                 generateMobileReport();
             } catch (err) {
                 console.error(err);
-                document.getElementById('mobileCardsContainer').innerHTML = `<div id="loadingText" style="color:red;">🔒 Security Error: Connection Refused.</div>`;
+                document.getElementById('mobileCardsContainer').innerHTML = `<div id="loadingText" style="color:red;">🔒 Security Connection Error.</div>`;
             }
         }
 
@@ -196,7 +188,7 @@
                                     <div class="values val-total" style="color:#00875a;"><span>Total:</span> <span>${totalCapacity.toLocaleString()}</span></div>
                                 </div>
                                 <div class="grid-box">
-                                    <div class="title" style="color:#e03131;">Total Ordered</div>
+                                    <div class="title" style="color:#dee2e6;">Total Ordered</div>
                                     <div class="values"><span>1-15:</span> <span>${ord1st.qty.toLocaleString()}</span></div>
                                     <div class="values"><span>16-End:</span> <span>${ord2nd.qty.toLocaleString()}</span></div>
                                     <div class="values val-total" style="color:#b01a1a;"><span>Total:</span> <span>${totalOrdered.toLocaleString()}</span></div>
